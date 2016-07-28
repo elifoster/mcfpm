@@ -29,7 +29,7 @@ class CommandInstall
       project_id = hash['projectID']
       uri = URI("http://minecraft.curseforge.com/projects/#{project_id}?cookieTest=1")
       project_name = Net::HTTP.get_response(uri)['Location'].split('/')[-1]
-      file = run(project_name, out_dir)
+      file = run(project_name, out_dir, hash['fileID'])
       if file
         mods << file
         puts "Downloaded #{file} mod to #{out_dir}.\n"
@@ -85,10 +85,11 @@ class CommandInstall
   # Downloads and overrides the package.
   # @param package [String] The package name shim (example seedcopy or super-modded-insanity).
   # @param directory [String] The directory to install (MOD_DIR or PACK_DIR).
+  # @param version [String] The version ID. Defaults to latest.
   # @return [String] The filename.
   # @return [NilClass] When it cannot find the project at all, it returns nil.
-  def self.run(package, directory)
-    uri = URI("http://minecraft.curseforge.com/projects/#{package}/files/latest?cookieTest=1&filter-game-version=2020709689%3A4449")
+  def self.run(package, directory, version = 'latest')
+    uri = URI("http://minecraft.curseforge.com/projects/#{package}/files/#{version}/download?cookieTest=1")
     response = Net::HTTP.get_response(uri)
     if response.is_a?(Net::HTTPNotFound)
       puts "WARNING: Could not find #{package} on CurseForge. Skipping..."
