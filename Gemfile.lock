@@ -3,6 +3,7 @@ GEM
   specs:
     httpclient (2.7.1)
     oj (2.14.6)
+    open_uri_redirections (0.2.1)
     zip (2.0.2)
 
 PLATFORMS
@@ -11,7 +12,11 @@ PLATFORMS
 DEPENDENCIES
   httpclient
   oj
+  open_uri_redirections
   zip
 
+RUBY VERSION
+   ruby 2.3.0p0
+
 BUNDLED WITH
-   1.11.2
+   1.12.5

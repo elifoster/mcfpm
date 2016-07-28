@@ -3,6 +3,7 @@ require 'zip'
 require 'oj'
 require 'net/http'
 require 'fileutils'
+require 'open_uri_redirections'
 require_relative '../mcfpm'
 
 # All of the main "install" commands: currently, installmod and installpack, used to install mods and modpacks to the
@@ -16,6 +17,27 @@ class CommandInstall
     return "Downloaded #{filename} mod to central directory."
   end
 
+  def self.run_from_manifest(pack_zip, out_dir)
+    manifest = {}
+    Zip::File.open(pack_zip) do |zip|
+      # noinspection RubyResolve
+      manifest = Oj.load(zip.get_entry('manifest.json').get_input_stream.read)
+    end
+
+    mods = []
+    manifest['files'].each do |hash|
+      project_id = hash['projectID']
+      uri = URI("http://minecraft.curseforge.com/projects/#{project_id}?cookieTest=1")
+      project_name = Net::HTTP.get_response(uri)['Location'].split('/')[-1]
+      file = run(project_name, out_dir)
+      if file
+        mods << file
+        puts "Downloaded #{file} mod to #{out_dir}.\n"
+      end
+    end
+    return mods
+  end
+
   # Runs the installpack core functionality, downloading a pack (mcfpm/pack) and installing its mods.
   # @see run_mod
   # @param package [String] The modpack package name.
@@ -23,22 +45,8 @@ class CommandInstall
   def self.run_pack(package)
     filename = run(package, MCFPM::PACK_DIR)
     puts "Downloaded #{filename} modpack to central directory. Unpacking...\n"
-    manifest = {}
-    Zip::File.open("#{MCFPM::PACK_DIR}/#{filename}") do |zip|
-      # noinspection RubyResolve
-      manifest = Oj.load(zip.get_entry('manifest.json').get_input_stream.read)
-    end
-    mods = []
-    manifest['files'].each do |hash|
-      project_id = hash['projectID']
-      uri = URI("http://minecraft.curseforge.com/projects/#{project_id}?cookieTest=1")
-      project_name = Net::HTTP.get_response(uri)['Location'].split('/')[-1]
-      file = run(project_name, MCFPM::MOD_DIR)
-      if file
-        mods << file
-        puts "Downloaded #{file} mod to central directory.\n"
-      end
-    end
+
+    mods = run_from_manifest("#{MCFPM::PACK_DIR}/#{filename}", MCFPM::PACK_DIR)
 
     folder = File.basename(filename, File.extname(filename))
 
@@ -97,10 +105,10 @@ class CommandInstall
 
     # Blame CoFHCore.
     begin
-      IO.copy_stream(open(new_uri), full_path)
+      IO.copy_stream(open(new_uri, allow_redirections: :all), full_path)
     rescue OpenURI::HTTPError
       first_uri = URI(URI.encode(Net::HTTP.get_response(new_uri)['Location'], '[]'))
-      IO.copy_stream(open(first_uri), full_path)
+      IO.copy_stream(open(first_uri, allow_redirections: :all), full_path)
     end
     return filename
   end

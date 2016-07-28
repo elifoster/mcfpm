@@ -32,6 +32,7 @@ MCFPM commands are:
   installpack      Install a modpack package.
   uninstallmod     Uninstall a mod package.
   uninstallpack    Uninstall a modpack package.
+  manifest         Install a downloaded modpack from the manifest file into the current directory.
   update           Update a package.
 
 For help on a particular command, use `mcfpm help COMMAND`
@@ -44,6 +45,7 @@ EOF
     fetch: 'Downloads a package to the current working directory.',
     installmod: 'Installs a mod to the central directory.',
     installpack: 'Installs a modpack to the central directory.',
+    manifest: 'Installs a modpack from the provided manifest.json into the current working directory.',
     commands: COMMANDS
   }
 
@@ -69,6 +71,8 @@ EOF
       return HELP_TEXT
     when 'fetch'
       return CommandFetch.run(args[1])
+    when 'manifest'
+      return CommandFetch.install_manifest(args[1])
     when 'installmod'
       return CommandInstall.run_mod(args[1])
     when 'installpack'

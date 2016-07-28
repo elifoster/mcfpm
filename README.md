@@ -25,6 +25,9 @@ The `mcfpm installmod <project name>` command installs a single mod into the mcf
 The `mcfpm installpack <project name>` command installs a single modpack and all of its mods into the mcfpm directory.
 Additionally, it will generate the JSON needed by MCFPM Loader to load all of the mods.
 
+### manifest
+`mcfpm manifest <zip>` Installs all of the files from the provided zip's manifest.json files into the current directory.
+
 ## TODO
 * update command
 * outdated

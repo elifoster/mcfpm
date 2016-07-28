@@ -1,5 +1,7 @@
 require 'open-uri'
 require 'net/http'
+require 'open_uri_redirections'
+require_relative 'install'
 
 # The command for installing a package to the current working directory.
 class CommandFetch
@@ -16,8 +18,12 @@ class CommandFetch
       ret << "WARNING: ALREADY PRESENT IN WORKING DIRECTORY. REPLACING.\n\n"
       File.delete(full_path)
     end
-    IO.copy_stream(open(url), full_path)
+    IO.copy_stream(open(url, allow_redirections: :all), full_path)
     ret << "Downloaded #{filename} to current directory (#{Dir.pwd})."
     return ret
+  end
+
+  def self.install_manifest(zip)
+    CommandInstall.run_from_manifest(zip, Dir.pwd)
   end
 end
